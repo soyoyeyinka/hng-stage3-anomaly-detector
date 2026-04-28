@@ -15,7 +15,7 @@ The provided Nextcloud image was not modified or replaced. All detection, alerti
 - **Server IP:** `13.42.74.134`
 - **Metrics Dashboard URL:** `http://metrics.dziphomefix.com.ng`
 - **GitHub Repository:** `PASTE_PUBLIC_GITHUB_REPO_LINK_HERE`
-- **Blog Post:** `PASTE_BLOG_POST_LINK_HERE`
+- **Blog Post:** `https://medium.com/@soyoyeolayinka35/building-a-real-time-http-anomaly-detection-engine-with-python-nginx-docker-and-iptables-73ca4af387c7`
 
 Nextcloud is accessible by server IP only, while the detector dashboard is served through the dashboard subdomain.
 
