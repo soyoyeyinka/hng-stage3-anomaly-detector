@@ -1,0 +1,25 @@
+digraph HNGStage3 {
+  graph [rankdir=LR, bgcolor="#0f172a", pad=0.4];
+  node [shape=box, style="rounded,filled", color="#38bdf8", fontcolor="#e5e7eb", fillcolor="#111827", fontname="Arial"];
+  edge [color="#93c5fd", fontcolor="#e5e7eb", fontname="Arial"];
+
+  Internet [label="Internet Users / Test Traffic"];
+  Nginx [label="Nginx Reverse Proxy\nJSON access logs\n/var/log/nginx/hng-access.log"];
+  Volume [label="Named Docker Volume\nHNG-nginx-logs"];
+  Nextcloud [label="Nextcloud Container\nkefaslungu/hng-nextcloud\nAccessible by IP"];
+  Detector [label="Python Detector Daemon\nDeque sliding windows\nRolling baseline\nAnomaly detection"];
+  Iptables [label="iptables DROP Rule\nPer-IP blocking"];
+  Slack [label="Slack Alerts\nBan / Unban / Global Alert"];
+  Dashboard [label="Live Metrics Dashboard\nmetrics.dziphomefix.com.ng"];
+  Audit [label="Structured Audit Log\nlogs/audit.log"];
+
+  Internet -> Nginx [label="HTTP requests"];
+  Nginx -> Nextcloud [label="Proxy by IP"];
+  Nginx -> Dashboard [label="Proxy dashboard subdomain"];
+  Nginx -> Volume [label="Write JSON logs"];
+  Volume -> Detector [label="Read-only log tail"];
+  Detector -> Iptables [label="Block abusive IPs"];
+  Detector -> Slack [label="Send alert"];
+  Detector -> Dashboard [label="Serve metrics API"];
+  Detector -> Audit [label="Write structured events"];
+}

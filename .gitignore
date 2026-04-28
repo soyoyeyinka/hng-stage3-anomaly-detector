@@ -1,0 +1,16 @@
+# Never commit real secrets
+detector/config.yaml
+
+# Logs and runtime files
+logs/
+*.log
+
+# Python
+__pycache__/
+*.pyc
+.env
+.venv/
+
+# OS/editor
+.DS_Store
+.vscode/

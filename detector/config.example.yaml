@@ -1,0 +1,36 @@
+log_path: /var/log/nginx/hng-access.log
+audit_log: /app/logs/audit.log
+
+dashboard_host: 0.0.0.0
+dashboard_port: 5050
+
+# Copy this file to config.yaml on the VPS and insert your real Slack webhook.
+slack_webhook_url: "PASTE_SLACK_WEBHOOK_HERE"
+
+window_seconds: 60
+baseline_window_minutes: 30
+baseline_recalc_seconds: 60
+
+zscore_threshold: 3.0
+multiplier_threshold: 5.0
+tight_zscore_threshold: 2.0
+tight_multiplier_threshold: 3.0
+error_surge_multiplier: 3.0
+
+min_baseline_points: 10
+hour_slot_min_points: 10
+baseline_floor_mean: 0.05
+baseline_floor_std: 0.10
+error_rate_floor: 0.01
+
+global_alert_cooldown_seconds: 120
+
+ban_durations_seconds:
+  - 600
+  - 1800
+  - 7200
+  - 0
+
+protected_ips:
+  - 127.0.0.1
+  - ::1
