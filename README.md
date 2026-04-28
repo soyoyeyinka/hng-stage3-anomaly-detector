@@ -13,10 +13,10 @@ The provided Nextcloud image was not modified or replaced. All detection, alerti
 ## Live Submission Details
 
 - **Server IP:** `13.42.74.134`
-- **Metrics Dashboard URL:** `http://metrics.dziphomefix.com.ng`
-- **GitHub Repository:** `PASTE_PUBLIC_GITHUB_REPO_LINK_HERE`
-- **Blog Post:** `https://medium.com/@soyoyeolayinka35/building-a-real-time-http-anomaly-detection-engine-with-python-nginx-docker-and-iptables-73ca4af387c7`
-- **GitHub Repository:** `https://github.com/soyoyeyinka/hng-stage3-anomaly-detector`
+- **Metrics Dashboard URL:http://metrics.dziphomefix.com.ng
+- **GitHub Repository:https://github.com/soyoyeyinka/hng-stage3-anomaly-detector
+- **Blog Post:https://medium.com/@soyoyeolayinka35/building-a-real-time-http-anomaly-detection-engine-with-python-nginx-docker-and-iptables-73ca4af387c7
+- **GitHub Repository:https://github.com/soyoyeyinka/hng-stage3-anomaly-detector
 
 Nextcloud is accessible by server IP only, while the detector dashboard is served through the dashboard subdomain.
 
@@ -193,8 +193,7 @@ The required minimum fields are included:
 The detector parses each log line as a JSON object and uses it for traffic analysis.
 
 ---
-
-## Real Client IP Handling
+Real Client IP Handling
 
 Nginx is configured to trust and forward the real client IP using the `X-Forwarded-For` header.
 
@@ -218,7 +217,7 @@ This ensures the detector works with the real request source IP rather than only
 
 ---
 
-## Why Python Was Used
+Why Python Was Used
 
 I used Python because it is readable, fast to develop with, suitable for daemon-style monitoring, and easy to explain in a beginner-friendly way.
 
@@ -236,14 +235,13 @@ Main Python libraries used:
 No Fail2Ban or external rate-limiting library was used.
 
 ---
-
-## Detector Daemon
+ Detector Daemon
 
 The detector is a continuously running Python service started by Docker:
 
-```text
+
 CMD ["python", "main.py"]
-```
+
 
 It starts multiple background threads:
 
@@ -255,8 +253,7 @@ It starts multiple background threads:
 This makes the detector a live daemon, not a cron job and not a one-time script.
 
 ---
-
-## Sliding Window Design
+Sliding Window Design
 
 The detector tracks request rates using two main 60-second deque-based windows:
 
@@ -265,27 +262,24 @@ global_window = deque()
 ip_windows[ip] = deque()
 ```
 
-### Global Window
+Global Window
 
 The global window stores timestamps for all requests.
 
 It answers the question:
 
-```text
 How many requests did the whole system receive in the last 60 seconds?
-```
 
-### Per-IP Window
+ Per-IP Window
 
 Each source IP has its own deque.
 
 It answers the question:
 
-```text
 How many requests did this specific IP make in the last 60 seconds?
-```
 
-### Eviction Logic
+
+Eviction Logic
 
 Every time a request is processed, the detector removes old timestamps that are outside the 60-second window.
 
@@ -347,11 +341,11 @@ This allows the system to learn that traffic may behave differently at different
 
 For example, the dashboard evidence showed different effective means across hourly slots:
 
-```text
+
 06:00 -> 0.0033
 07:00 -> 0.0919
 08:00 -> 0.1256
-```
+
 
 When the current hour has enough data points, the detector prefers the current hour’s baseline over the general rolling 30-minute baseline.
 
@@ -359,34 +353,32 @@ This makes the detector more adaptive and realistic.
 
 ---
 
-## Anomaly Detection Logic
+Anomaly Detection Logic
 
 An anomaly is detected when either of the following conditions fires first:
 
-```text
+
 z-score > 3.0
-```
 
 or:
-
-```text
+text
 current_rate > 5 × baseline_mean
-```
+
 
 The z-score is calculated as:
 
-```text
+
 (current_rate - baseline_mean) / baseline_stddev
-```
+
 
 This logic is used for both:
 
 - Per-IP anomaly detection
 - Global traffic anomaly detection
 
----
 
-## Per-IP Anomaly Behaviour
+
+Per-IP Anomaly Behaviour
 
 When a single IP behaves abnormally, the detector:
 
@@ -400,13 +392,12 @@ When a single IP behaves abnormally, the detector:
 
 Example audit entry:
 
-```text
 [2026-04-28T08:36:51+00:00] BAN 203.0.113.77 | per_ip_multiplier rate>5.0x_mean | rate=0.4 | baseline=mean=0.0781,std=0.4350,source=hour_slot_07 | duration=1800 seconds
-```
+
 
 ---
 
-## Global Anomaly Behaviour
+Global Anomaly Behaviour
 
 When the entire system sees a global traffic spike, the detector sends a Slack alert but does not block all traffic.
 
@@ -414,19 +405,14 @@ This is intentional because a global spike may represent legitimate viral traffi
 
 Global anomaly action:
 
-```text
 Slack alert only
-```
 
 Example audit action:
 
-```text
+
 GLOBAL_ALERT global | global_multiplier rate>5.0x_mean
-```
 
----
-
-## Error Surge Detection
+Error Surge Detection
 
 The detector also watches HTTP error responses.
 
@@ -464,34 +450,29 @@ sudo iptables -I DOCKER-USER 1 -s 203.0.113.77 -j DROP
 
 Evidence screenshot showed:
 
-```text
 DROP  all  --  203.0.113.77  0.0.0.0/0
 ```
 
 This confirms that suspicious traffic from that IP is dropped by the server firewall.
 
----
 
-## Auto-Unban Backoff Schedule
+Auto-Unban Backoff Schedule
 
 The detector releases bans using a backoff schedule:
-
-```text
 1st ban: 10 minutes
 2nd ban: 30 minutes
 3rd ban: 2 hours
 4th ban: permanent
-```
+
 
 Configuration:
-
-```yaml
+yaml
 ban_durations_seconds:
   - 600
   - 1800
   - 7200
   - 0
-```
+
 
 Each unban generates:
 
@@ -500,28 +481,18 @@ Each unban generates:
 - Dashboard update
 
 Example audit action:
-
-```text
 UNBAN 203.0.113.77 | ban_expired
-```
 
----
-
-## Slack Alerts
+Slack Alerts
 
 Slack alerts are sent through an Incoming Webhook stored in the private VPS config file:
-
-```text
 detector/config.yaml
-```
+
 
 The real webhook is not committed to GitHub.
 
 Only the safe example file is included:
-
-```text
 detector/config.example.yaml
-```
 
 Slack alerts include:
 
@@ -538,15 +509,11 @@ Alert types implemented:
 - IP unbanned
 - Global anomaly detected
 
----
 
-## Live Metrics Dashboard
+ Live Metrics Dashboard
 
 Dashboard URL:
-
-```text
 http://metrics.dziphomefix.com.ng
-```
 
 The dashboard refreshes every 3 seconds and shows:
 
@@ -563,24 +530,18 @@ The dashboard refreshes every 3 seconds and shows:
 
 The dashboard was served through the subdomain, while Nextcloud remained accessible by server IP only.
 
----
 
-## Audit Logging
+Audit Logging
 
 The detector writes structured audit logs to:
-
-```text
 logs/audit.log
-```
+
 
 Audit log format:
-
-```text
 [timestamp] ACTION ip | condition | rate | baseline | duration
-```
+
 
 Audit events include:
-
 - `START`
 - `BASELINE_RECALC`
 - `GLOBAL_ALERT`
@@ -588,14 +549,10 @@ Audit events include:
 - `UNBAN`
 
 Example:
-
-```text
 [2026-04-28T08:36:51+00:00] BAN 203.0.113.77 | per_ip_multiplier rate>5.0x_mean | rate=0.4 | baseline=mean=0.0781,std=0.4350,source=hour_slot_07 | duration=1800 seconds
-```
 
----
 
-## Evidence Screenshots
+Evidence Screenshots
 
 The required screenshots are stored in the `screenshots/` directory.
 
@@ -609,21 +566,20 @@ The required screenshots are stored in the `screenshots/` directory.
 | `Audit-log.png` | Structured audit log showing baseline recalculation, ban, unban, and global alert events |
 | `Baseline-graph.png` | Dashboard graph showing multiple hourly slots with different effective mean values |
 
----
 
-## Fresh VPS Setup Instructions
+
+Fresh VPS Setup Instructions
 
 These steps install and run the project from a new Ubuntu VPS.
 
-### 1. Update the server
+1. Update the server
 
-```bash
+bash
 sudo apt-get update && sudo apt-get upgrade -y
-```
 
-### 2. Install required packages
 
-```bash
+2. Install required packages
+bash
 sudo apt-get install -y \
   ca-certificates \
   curl \
@@ -634,11 +590,10 @@ sudo apt-get install -y \
   htop \
   nano \
   iptables
-```
 
-### 3. Install Docker and Docker Compose plugin
 
-```bash
+3. Install Docker and Docker Compose plugin
+bash
 sudo install -m 0755 -d /etc/apt/keyrings
 
 sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg \
@@ -662,158 +617,129 @@ sudo apt-get install -y \
 
 sudo usermod -aG docker ubuntu
 newgrp docker
-```
 
-### 4. Configure firewall
 
-```bash
+4. Configure firewall
+bash
 sudo ufw allow OpenSSH
 sudo ufw allow 22/tcp
 sudo ufw allow 80
 sudo ufw allow 443
 sudo ufw --force enable
 sudo ufw status
-```
 
-### 5. Clone the repository
 
-```bash
+5. Clone the repository
+bash
 git clone PASTE_PUBLIC_GITHUB_REPO_LINK_HERE
 cd hng-stage3-detector
-```
 
-### 6. Create private detector config
 
-```bash
+6. Create private detector config
+bash
 cp detector/config.example.yaml detector/config.yaml
 nano detector/config.yaml
-```
 
 Add the real Slack webhook:
-
-```yaml
+yaml
 slack_webhook_url: "PASTE_REAL_SLACK_WEBHOOK_HERE"
-```
 
 Do not commit `detector/config.yaml`.
 
-### 7. Start the stack
-
-```bash
+7. Start the stack
+bash
 docker compose up -d --build
-```
 
-### 8. Confirm containers are running
-
-```bash
+ 8. Confirm containers are running
+bash
 docker ps
-```
+
 
 Expected containers:
-
-```text
 hng-nginx
 hng-nextcloud
 hng-detector
-```
 
-### 9. View detector logs
-
-```bash
+ 9. View detector logs
+bash
 docker logs -f hng-detector
-```
 
-### 10. View audit log
-
-```bash
+10. View audit log
+bash
 tail -f logs/audit.log
-```
 
----
 
-## Useful Verification Commands
+Useful Verification Commands
 
 Check the Nginx JSON log:
 
-```bash
+bash
 docker exec hng-nginx tail -n 20 /var/log/nginx/hng-access.log
-```
+
 
 Check detector logs:
-
-```bash
+bash
 docker logs --tail=100 hng-detector
-```
+
 
 Check audit log:
-
-```bash
+bash
 tail -n 100 logs/audit.log
-```
 
-Check `iptables` INPUT chain:
 
-```bash
+Check iptables INPUT chain:
+bash
 sudo iptables -L INPUT -n --line-numbers
-```
+
 
 Check Docker-aware blocking chain:
 
-```bash
+bash
 sudo iptables -L DOCKER-USER -n --line-numbers
-```
+
 
 Check dashboard response:
 
-```bash
+bash
 curl -I http://metrics.dziphomefix.com.ng
-```
+
 
 Check Nextcloud response:
 
-```bash
+bash
 curl -I http://13.42.74.134
-```
 
----
 
-## Controlled Testing Notes
+Controlled Testing Notes
 
 The project was tested safely on the project’s own VPS.
 
 Controlled test traffic was generated against the local system and through controlled JSON log entries. No third-party system was targeted.
 
 Example demonstration IP:
-
-```text
 203.0.113.77
-```
+
 
 This is a documentation/test IP range and is safe for demonstration evidence.
 
----
-
-## Security Notes
+Security Notes
 
 The real Slack webhook is a secret and must not be committed.
 
 The project ignores the real config file:
 
-```text
 detector/config.yaml
-```
+
 
 The public repository only includes:
 
-```text
 detector/config.example.yaml
-```
 
-The `.gitignore` also excludes runtime logs and generated Python cache files.
 
-Recommended `.gitignore` entries:
+The .gitignore also excludes runtime logs and generated Python cache files.
 
-```text
+Recommended .gitignore entries:
+
 detector/config.yaml
 logs/
 *.log
@@ -823,45 +749,9 @@ __pycache__/
 .venv/
 .DS_Store
 .vscode/
-```
 
-If a Slack webhook is accidentally exposed, it should be deleted and regenerated in Slack.
 
----
-
-## Final Submission Checklist
-
-- [x] Linux VPS provisioned
-- [x] VPS meets minimum 2 vCPU and 2GB RAM requirement
-- [x] Nextcloud deployed with Docker Compose
-- [x] Required Nextcloud image used without modification
-- [x] Nginx reverse proxy configured
-- [x] JSON access logs enabled
-- [x] Logs written to `/var/log/nginx/hng-access.log`
-- [x] Required Docker volume `HNG-nginx-logs` used
-- [x] Detector runs continuously as a daemon
-- [x] Deque-based 60-second sliding windows implemented
-- [x] Per-IP request tracking implemented
-- [x] Global request tracking implemented
-- [x] Rolling 30-minute baseline implemented
-- [x] Hourly baseline slots implemented
-- [x] Z-score anomaly detection implemented
-- [x] 5x baseline multiplier detection implemented
-- [x] Error surge threshold tightening implemented
-- [x] Per-IP `iptables` blocking implemented
-- [x] Global anomaly Slack alert implemented
-- [x] Auto-unban backoff schedule implemented
-- [x] Slack alerts implemented
-- [x] Live dashboard implemented
-- [x] Dashboard refreshes every 3 seconds
-- [x] Audit logging implemented
-- [x] Required screenshots captured
-- [ ] Public GitHub repository link added
-- [ ] Blog post link added
-
----
-
-## Author
+ Author: soyoye olayinka
 
 Built for the HNG Stage 3 DevOps Track task.
 
