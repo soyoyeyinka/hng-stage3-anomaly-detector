@@ -13,7 +13,7 @@ The provided Nextcloud image was not modified or replaced. All detection, alerti
 ## Live Submission Details
 
 - **Server IP:** `13.42.74.134`
-- **Metrics Dashboard URL:http://metrics.dziphomefix.com.ng
+- **Metrics Dashboard URL:https://metrics.dziphomefix.com.ng
 - **GitHub Repository:https://github.com/soyoyeyinka/hng-stage3-anomaly-detector
 - **Blog Post:https://medium.com/@soyoyeolayinka35/building-a-real-time-http-anomaly-detection-engine-with-python-nginx-docker-and-iptables-73ca4af387c7
 - **GitHub Repository:https://github.com/soyoyeyinka/hng-stage3-anomaly-detector
@@ -513,7 +513,7 @@ Alert types implemented:
  Live Metrics Dashboard
 
 Dashboard URL:
-http://metrics.dziphomefix.com.ng
+https://metrics.dziphomefix.com.ng
 
 The dashboard refreshes every 3 seconds and shows:
 
@@ -701,7 +701,7 @@ sudo iptables -L DOCKER-USER -n --line-numbers
 Check dashboard response:
 
 bash
-curl -I http://metrics.dziphomefix.com.ng
+curl -I https://metrics.dziphomefix.com.ng
 
 
 Check Nextcloud response:
